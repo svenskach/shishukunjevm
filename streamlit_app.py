@@ -1,3 +1,4 @@
+```python
 import requests
 import streamlit as st
 from streamlit_js_eval import streamlit_js_eval
@@ -6,11 +7,6 @@ from streamlit_js_eval import streamlit_js_eval
 # ============================================================
 #                    ELECTION CONFIGURATION
 # ============================================================
-#
-# CHANGE THESE FOUR VALUES ONLY when changing the choices.
-#
-# You can use candidate names, houses, parties, options, etc.
-#
 
 OPTION_1 = "Option A"
 OPTION_2 = "Option B"
@@ -30,7 +26,6 @@ SCHOOL_NAME = "THE SHISHUKUNJ INTERNATIONAL SCHOOL"
 BACKEND_URL = "https://evm.pythonanywhere.com"
 
 # Give every election/poll its own ID.
-# Change this when starting a completely new election.
 ELECTION_ID = "school-election-2026"
 
 
@@ -132,26 +127,6 @@ st.markdown(
 # ============================================================
 #                    PERSISTENT BROWSER TOKEN
 # ============================================================
-#
-# This is NOT an HWID.
-#
-# It creates a random identifier and stores it in the
-# browser's localStorage.
-#
-# Normal browser:
-#     token persists
-#
-# Incognito:
-#     normally gets a different storage context
-#
-# Clear site data:
-#     token is removed
-#
-# Different browser:
-#     different token
-#
-# The backend never stores the raw token. It stores a hash.
-# ============================================================
 
 DEVICE_TOKEN_JS = """
 (() => {
@@ -183,8 +158,8 @@ device_token = streamlit_js_eval(
 )
 
 
-# The JavaScript component may require a short moment to
-# return the token.
+# The JavaScript component may require a short moment
+# to return the token.
 
 if not device_token:
 
@@ -327,11 +302,11 @@ if has_voted:
         """
         <div class="success-box">
 
-            <h3>Vote Already Recorded</h3>
+            <h3>✓ Vote Already Recorded</h3>
 
             <p>
-                A vote has already been submitted from
-                this browser for this election.
+                Your vote has already been submitted
+                from this browser for this election.
             </p>
 
         </div>
@@ -398,8 +373,8 @@ if vote_button:
 
 
     # --------------------------------------------------------
-    # Make sure the selected option actually belongs to the
-    # configured list.
+    # Make sure the selected option actually belongs
+    # to the configured list.
     # --------------------------------------------------------
 
     if selected_option not in OPTIONS:
@@ -459,3 +434,4 @@ if vote_button:
     else:
 
         st.error(message)
+```
