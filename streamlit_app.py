@@ -433,4 +433,3 @@ if vote_button:
     else:
 
         st.error(message)
-```
