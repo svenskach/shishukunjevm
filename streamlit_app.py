@@ -301,12 +301,12 @@ if has_voted:
         """
         <div class="success-box">
 
-            <h3>✓ Vote Already Recorded</h3>
+            ✓ Vote Already Recorded
 
-            <p>
+            
                 Your vote has already been submitted
                 from this browser for this election.
-            </p>
+            
 
         </div>
         """,
@@ -404,11 +404,11 @@ if vote_button:
             """
             <div class="success-box">
 
-                <h3>✓ Vote Recorded</h3>
+                ✓ Vote Recorded
 
-                <p>
+                
                     Your vote has been successfully submitted.
-                </p>
+                
 
             </div>
             """,
