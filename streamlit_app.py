@@ -1,3 +1,4 @@
+```python
 import requests
 import streamlit as st
 from streamlit_js_eval import streamlit_js_eval
@@ -175,20 +176,15 @@ if not device_token:
 
 
 # ============================================================
-#                     READ URL HASH
+#                    ADMIN CONSOLE CHECK
 # ============================================================
 
-URL_HASH_JS = """
-(() => {
-    return window.location.hash;
-})()
-"""
+# Use a Streamlit query parameter instead of #console.
+#
+# Console URL:
+# https://shishukunjevm.streamlit.app/?console=1
 
-url_hash = streamlit_js_eval(
-    js_expressions=URL_HASH_JS,
-    want_output=True,
-    key="console_url_hash",
-)
+is_console = st.query_params.get("console") == "1"
 
 
 # ============================================================
@@ -229,8 +225,8 @@ def get_vote_status():
 
 def submit_vote(name, phone_number, choice):
     """
-    Submit the voter's name, phone number and selected
-    option to the backend.
+    Submit the name, phone number and selected option
+    to the backend.
     """
 
     try:
@@ -346,7 +342,7 @@ def open_console(password):
 #                       ADMIN CONSOLE
 # ============================================================
 
-if url_hash == "#console":
+if is_console:
 
     st.markdown(
         f"""
@@ -622,8 +618,7 @@ if vote_button:
 
 
     # --------------------------------------------------------
-    # Make sure the selected option actually belongs
-    # to the configured list.
+    # Make sure selected option belongs to OPTIONS
     # --------------------------------------------------------
 
     if selected_option not in OPTIONS:
@@ -685,3 +680,4 @@ if vote_button:
     else:
 
         st.error(message)
+```
