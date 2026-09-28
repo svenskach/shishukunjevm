@@ -4,7 +4,7 @@ from streamlit_js_eval import streamlit_js_eval
 
 
 # ============================================================
-#                    ELECTION CONFIGURATION
+# CONFIGURATION
 # ============================================================
 
 OPTION_1 = "Option A"
@@ -21,15 +21,13 @@ OPTIONS = [
 
 SCHOOL_NAME = "THE SHISHUKUNJ INTERNATIONAL SCHOOL"
 
-# PythonAnywhere backend
 BACKEND_URL = "https://evm.pythonanywhere.com"
 
-# Give every election/poll its own ID.
 ELECTION_ID = "school-election-2026"
 
 
 # ============================================================
-#                        PAGE CONFIG
+# PAGE CONFIG
 # ============================================================
 
 st.set_page_config(
@@ -41,24 +39,18 @@ st.set_page_config(
 
 
 # ============================================================
-#                         STYLING
+# STYLING
 # ============================================================
 
 st.markdown(
     """
     <style>
 
-    /* Main beige background */
-    [data-testid="stAppViewContainer"] {
-        background-color: #F3EBDD;
+    .stApp {
+        background-color: #f5efe3;
     }
 
-    [data-testid="stHeader"] {
-        background-color: #F3EBDD;
-    }
-
-    /* Remove normal Streamlit decoration */
-    #MainMenu {
+    header {
         visibility: hidden;
     }
 
@@ -66,55 +58,54 @@ st.markdown(
         visibility: hidden;
     }
 
-    header {
+    #MainMenu {
         visibility: hidden;
     }
 
-    /* Keep the voting application relatively narrow */
-    .block-container {
-        max-width: 760px;
-        padding-top: 2.5rem;
-        padding-bottom: 3rem;
-    }
-
-    /* School name */
     .school-title {
         text-align: center;
-        color: #302820;
-        font-family: Georgia, "Times New Roman", serif;
-        font-size: 2rem;
+        font-size: 30px;
         font-weight: 700;
-        letter-spacing: 0.06em;
-        line-height: 1.25;
-        margin-bottom: 0.5rem;
+        margin-top: 20px;
+        margin-bottom: 4px;
     }
 
-    /* Subtitle */
-    .subtitle {
+    .school-subtitle {
         text-align: center;
-        color: #75695D;
-        font-family: Arial, sans-serif;
-        font-size: 1rem;
-        margin-bottom: 2.5rem;
+        font-size: 17px;
+        margin-bottom: 30px;
     }
 
-    /* Information text */
+    .success-box {
+        background-color: #e9f7ed;
+        border: 1px solid #8ac79a;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
+
+    .success-box h3 {
+        margin-top: 0;
+    }
+
     .info-text {
         text-align: center;
-        color: #75695D;
-        font-size: 0.9rem;
+        font-size: 15px;
     }
 
-    /* Success message */
-    .success-box {
-        background-color: #E8F3E8;
-        border: 1px solid #B9D5B9;
-        color: #315A31;
-        border-radius: 14px;
-        padding: 1.5rem;
+    .console-title {
         text-align: center;
-        margin-top: 1rem;
-        margin-bottom: 1rem;
+        font-size: 27px;
+        font-weight: 700;
+        margin-top: 20px;
+        margin-bottom: 5px;
+    }
+
+    .console-subtitle {
+        text-align: center;
+        margin-bottom: 25px;
     }
 
     </style>
@@ -124,142 +115,196 @@ st.markdown(
 
 
 # ============================================================
-#                    PERSISTENT BROWSER TOKEN
+# BROWSER DEVICE TOKEN
 # ============================================================
 
-DEVICE_TOKEN_JS = """
-(() => {
-
-    const key = "shishukunj_voting_device_token";
-
-    let token = localStorage.getItem(key);
-
-    if (!token) {
-
-        token =
-            crypto.randomUUID() +
-            "-" +
-            crypto.randomUUID();
-
-        localStorage.setItem(key, token);
-    }
-
-    return token;
-
-})()
-"""
-
-
 device_token = streamlit_js_eval(
-    js_expressions=DEVICE_TOKEN_JS,
+    js_expressions="""
+    (() => {
+        const key = "shishukunj_voting_device_token";
+
+        let token = localStorage.getItem(key);
+
+        if (!token) {
+            token =
+                crypto.randomUUID()
+                + "-"
+                + crypto.randomUUID();
+
+            localStorage.setItem(key, token);
+        }
+
+        return token;
+    })()
+    """,
     want_output=True,
     key="persistent_device_token",
 )
 
 
-# The JavaScript component may require a short moment
-# to return the token.
-
 if not device_token:
 
+    st.info("Preparing voting session...")
+
+    st.stop()
+
+
+# ============================================================
+# CHECK WHETHER THIS IS /#console
+# ============================================================
+
+url_hash = streamlit_js_eval(
+    js_expressions="window.location.hash",
+    want_output=True,
+    key="url_hash",
+)
+
+
+# ============================================================
+# ADMIN CONSOLE
+# ============================================================
+
+if url_hash == "#console":
+
     st.markdown(
-        """
-        <p class="info-text">
-            Preparing voting session...
-        </p>
+        f"""
+        <div class="console-title">
+            {SCHOOL_NAME}
+        </div>
+
+        <div class="console-subtitle">
+            Voting Administration Console
+        </div>
         """,
         unsafe_allow_html=True,
+    )
+
+    st.markdown("---")
+
+    console_password = st.text_input(
+        "Console password",
+        type="password",
+        placeholder="Enter password",
+    )
+
+    if st.button(
+        "OPEN CONSOLE",
+        type="primary",
+        use_container_width=True,
+    ):
+
+        if not console_password:
+
+            st.error("Please enter the console password.")
+
+        else:
+
+            try:
+
+                response = requests.post(
+                    f"{BACKEND_URL}/console",
+                    json={
+                        "password": console_password,
+                    },
+                    timeout=15,
+                )
+
+                if response.status_code == 401:
+
+                    st.error("Incorrect password.")
+
+                elif response.status_code != 200:
+
+                    try:
+                        error_data = response.json()
+                        st.error(
+                            error_data.get(
+                                "error",
+                                "Unable to open console.",
+                            )
+                        )
+                    except Exception:
+                        st.error(
+                            "Unable to open console."
+                        )
+
+                else:
+
+                    data = response.json()
+
+                    votes = data.get(
+                        "votes",
+                        [],
+                    )
+
+                    total_votes = data.get(
+                        "total_votes",
+                        len(votes),
+                    )
+
+                    st.success(
+                        f"Console opened successfully. "
+                        f"Total votes: {total_votes}"
+                    )
+
+                    if votes:
+
+                        table_rows = []
+
+                        for vote in votes:
+
+                            table_rows.append(
+                                {
+                                    "Name":
+                                        vote.get(
+                                            "name",
+                                            "",
+                                        ),
+
+                                    "Phone Number":
+                                        vote.get(
+                                            "phone_number",
+                                            "",
+                                        ),
+
+                                    "Vote":
+                                        vote.get(
+                                            "vote",
+                                            "",
+                                        ),
+                                }
+                            )
+
+                        st.dataframe(
+                            table_rows,
+                            use_container_width=True,
+                            hide_index=True,
+                        )
+
+                    else:
+
+                        st.info(
+                            "No votes have been recorded yet."
+                        )
+
+            except requests.RequestException:
+
+                st.error(
+                    "Unable to contact the voting server."
+                )
+
+    st.markdown("---")
+
+    st.caption(
+        "Administrative console • "
+        + ELECTION_ID
     )
 
     st.stop()
 
 
 # ============================================================
-#                     BACKEND FUNCTIONS
-# ============================================================
-
-def get_vote_status():
-    """
-    Ask the PythonAnywhere backend whether this browser
-    has already voted in this election.
-    """
-
-    try:
-
-        response = requests.post(
-            f"{BACKEND_URL}/status",
-
-            json={
-                "election_id": ELECTION_ID,
-                "device_token": device_token,
-            },
-
-            timeout=10,
-        )
-
-        if response.status_code != 200:
-
-            return None, "Unable to contact the voting server."
-
-        data = response.json()
-
-        return data.get("has_voted", False), None
-
-    except requests.RequestException:
-
-        return None, "Unable to contact the voting server."
-
-
-def submit_vote(choice):
-    """
-    Submit the selected option to the backend.
-    """
-
-    try:
-
-        response = requests.post(
-            f"{BACKEND_URL}/vote",
-
-            json={
-                "election_id": ELECTION_ID,
-                "device_token": device_token,
-                "choice": choice,
-            },
-
-            timeout=15,
-        )
-
-        try:
-            data = response.json()
-
-        except ValueError:
-            return False, "The server returned an invalid response."
-
-        if response.status_code == 201:
-
-            return (
-                True,
-                data.get(
-                    "message",
-                    "Vote recorded successfully."
-                ),
-            )
-
-        return (
-            False,
-            data.get(
-                "error",
-                "Vote could not be recorded."
-            ),
-        )
-
-    except requests.RequestException:
-
-        return False, "Unable to contact the voting server."
-
-
-# ============================================================
-#                          HEADER
+# NORMAL VOTING PAGE
 # ============================================================
 
 st.markdown(
@@ -267,13 +312,8 @@ st.markdown(
     <div class="school-title">
         {SCHOOL_NAME}
     </div>
-    """,
-    unsafe_allow_html=True,
-)
 
-st.markdown(
-    """
-    <div class="subtitle">
+    <div class="school-subtitle">
         Voting Portal
     </div>
     """,
@@ -282,31 +322,75 @@ st.markdown(
 
 
 # ============================================================
-#                    CHECK WHETHER ALREADY VOTED
+# BACKEND FUNCTIONS
 # ============================================================
 
-has_voted, status_error = get_vote_status()
+def get_vote_status():
+
+    response = requests.post(
+        f"{BACKEND_URL}/status",
+        json={
+            "election_id": ELECTION_ID,
+            "device_token": device_token,
+        },
+        timeout=15,
+    )
+
+    response.raise_for_status()
+
+    return response.json()
 
 
-if status_error:
+def submit_vote(
+    name,
+    phone_number,
+    choice,
+):
 
-    st.error(status_error)
+    response = requests.post(
+        f"{BACKEND_URL}/vote",
+        json={
+            "election_id": ELECTION_ID,
+            "device_token": device_token,
+            "name": name,
+            "phone_number": phone_number,
+            "choice": choice,
+        },
+        timeout=15,
+    )
+
+    return response
+
+
+# ============================================================
+# CHECK EXISTING VOTE
+# ============================================================
+
+try:
+
+    status_data = get_vote_status()
+
+except requests.RequestException:
+
+    st.error(
+        "Unable to contact the voting server."
+    )
 
     st.stop()
 
 
-if has_voted:
+if status_data.get("has_voted"):
 
     st.markdown(
         """
         <div class="success-box">
 
-            ✓ Vote Already Recorded
+            <h3>✓ Vote Already Recorded</h3>
 
-            
+            <p>
                 Your vote has already been submitted
                 from this browser for this election.
-            
+            </p>
 
         </div>
         """,
@@ -326,13 +410,27 @@ if has_voted:
 
 
 # ============================================================
-#                         VOTING UI
+# VOTER INFORMATION
 # ============================================================
 
-st.subheader("Cast your vote")
+st.markdown("### Voter Information")
 
-st.write("Select one option:")
+name = st.text_input(
+    "Full Name *",
+    placeholder="Enter your full name",
+)
 
+phone_number = st.text_input(
+    "Phone Number *",
+    placeholder="Enter your phone number",
+)
+
+
+# ============================================================
+# VOTING OPTIONS
+# ============================================================
+
+st.markdown("### Select Your Vote")
 
 selected_option = st.radio(
     "Voting options",
@@ -342,94 +440,143 @@ selected_option = st.radio(
 )
 
 
-st.write("")
-
-
 # ============================================================
-#                       SUBMIT BUTTON
+# SUBMIT
 # ============================================================
 
-vote_button = st.button(
+if st.button(
     "SUBMIT VOTE",
     type="primary",
     use_container_width=True,
-)
-
-
-if vote_button:
+):
 
     # --------------------------------------------------------
-    # Make sure an option was selected
+    # Name validation
     # --------------------------------------------------------
 
-    if selected_option is None:
+    name = name.strip()
 
-        st.warning(
-            "Please select an option before voting."
+    if not name:
+
+        st.error(
+            "Please enter your name."
         )
 
         st.stop()
 
 
     # --------------------------------------------------------
-    # Make sure the selected option actually belongs
-    # to the configured list.
+    # Phone validation
     # --------------------------------------------------------
+
+    phone_number = phone_number.strip()
+
+    if not phone_number:
+
+        st.error(
+            "Please enter your phone number."
+        )
+
+        st.stop()
+
+
+    # --------------------------------------------------------
+    # Vote validation
+    # --------------------------------------------------------
+
+    if not selected_option:
+
+        st.error(
+            "Please select an option."
+        )
+
+        st.stop()
+
 
     if selected_option not in OPTIONS:
 
-        st.error("Invalid option.")
+        st.error(
+            "Invalid voting option."
+        )
 
         st.stop()
 
 
     # --------------------------------------------------------
-    # Send vote to backend
+    # Submit to backend
     # --------------------------------------------------------
 
-    with st.spinner("Submitting your vote..."):
+    try:
 
-        success, message = submit_vote(
-            selected_option
+        response = submit_vote(
+            name,
+            phone_number,
+            selected_option,
         )
 
+        if response.status_code == 201:
 
-    # --------------------------------------------------------
-    # Successful vote
-    # --------------------------------------------------------
+            st.markdown(
+                """
+                <div class="success-box">
 
-    if success:
+                    <h3>✓ Vote Recorded</h3>
 
-        st.markdown(
-            """
-            <div class="success-box">
+                    <p>
+                        Your vote has been successfully
+                        submitted.
+                    </p>
 
-                ✓ Vote Recorded
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
 
-                
-                    Your vote has been successfully submitted.
-                
+            st.markdown(
+                """
+                <p class="info-text">
+                    A second vote from this browser
+                    will not be accepted.
+                </p>
+                """,
+                unsafe_allow_html=True,
+            )
 
-            </div>
-            """,
-            unsafe_allow_html=True,
+            st.stop()
+
+
+        elif response.status_code == 409:
+
+            st.error(
+                "A vote has already been recorded "
+                "from this browser for this election."
+            )
+
+            st.stop()
+
+
+        else:
+
+            try:
+
+                error_data = response.json()
+
+                error_message = error_data.get(
+                    "error",
+                    "The vote could not be recorded.",
+                )
+
+            except Exception:
+
+                error_message = (
+                    "The vote could not be recorded."
+                )
+
+            st.error(error_message)
+
+
+    except requests.RequestException:
+
+        st.error(
+            "Unable to contact the voting server."
         )
-
-        st.markdown(
-            """
-            <p class="info-text">
-                A second vote cannot be submitted from
-                this browser for this election.
-            </p>
-            """,
-            unsafe_allow_html=True,
-        )
-
-
-    # --------------------------------------------------------
-    # Failed vote
-    # --------------------------------------------------------
-
-    else:
-
-        st.error(message)
