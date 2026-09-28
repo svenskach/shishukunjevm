@@ -1,4 +1,3 @@
-```python
 import requests
 import streamlit as st
 from streamlit_js_eval import streamlit_js_eval
@@ -680,4 +679,3 @@ if vote_button:
     else:
 
         st.error(message)
-```
