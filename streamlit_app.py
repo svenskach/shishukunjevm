@@ -468,7 +468,7 @@ st.markdown(
 st.markdown(
     """
     <div class="subtitle">
-        Voting Portal
+        eVoting Portal
     </div>
     """,
     unsafe_allow_html=True,
