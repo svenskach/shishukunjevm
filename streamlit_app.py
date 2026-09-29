@@ -19,7 +19,7 @@ OPTIONS = [
     OPTION_4,
 ]
 
-SCHOOL_NAME = "THE SHISHUKUNJ INTERNATIONAL SCHOOL"
+SCHOOL_NAME = "THE SHISHUKUNJ INTERNATIONAL SCHOOL NORTH CAMPUS INDORE"
 
 # PythonAnywhere backend
 BACKEND_URL = "https://evm.pythonanywhere.com"
@@ -495,12 +495,12 @@ if has_voted:
         """
         <div class="success-box">
 
-            <h3>✓ Vote Already Recorded</h3>
+            ✓ Vote Already Recorded
 
-            <p>
+            
                 Your vote has already been submitted
                 from this browser for this election.
-            </p>
+            
 
         </div>
         """,
@@ -650,12 +650,12 @@ if vote_button:
             """
             <div class="success-box">
 
-                <h3>✓ Vote Recorded</h3>
+                ✓ Vote Recorded
 
-                <p>
+                
                     Your vote has been successfully submitted.
-                </p>
-
+                
+                
             </div>
             """,
             unsafe_allow_html=True,
@@ -665,7 +665,7 @@ if vote_button:
             """
             <p class="info-text">
                 A second vote cannot be submitted from
-                this browser for this election.
+                this device for this election.
             </p>
             """,
             unsafe_allow_html=True,
